@@ -1,0 +1,5 @@
+{
+  "name": "GranjaPOS Digital",
+  "description": "Sistema de gestión integral para venta de huevos, lácteos y cárnicos. Incluye POS, control de inventario, gestión de delivery y reportes.",
+  "requestFramePermissions": []
+}
