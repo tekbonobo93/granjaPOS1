@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GranjaPOS Digital</title>
+    <!-- Mantenemos Tailwind por CDN para simplificar la configuración de CSS en este paso, 
+         aunque en producción idealmente se instalaría vía npm -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -22,9 +24,24 @@
         }
       }
     </script>
-  
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react/": "https://esm.sh/react@18.2.0/",
+    "react-dom": "https://esm.sh/react-dom@18.2.0",
+    "react-dom/": "https://esm.sh/react-dom@18.2.0/",
+    "lucide-react": "https://esm.sh/lucide-react@0.344.0",
+    "recharts": "https://esm.sh/recharts@2.12.2?external=react,react-dom",
+    "vite": "https://aistudiocdn.com/vite@^7.2.4",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
+  }
+}
+</script>
 </head>
   <body class="bg-gray-50 text-gray-900">
     <div id="root"></div>
+    <!-- Vite inyectará el script aquí, pero debemos apuntarlo -->
+    <script type="module" src="/index.tsx"></script>
   </body>
 </html>
