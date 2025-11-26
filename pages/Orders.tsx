@@ -1,14 +1,22 @@
 
 import React, { useState, useEffect } from 'react';
-import { getOrders, updateOrderStatus } from '../services/api';
-import { Order, OrderStatus, OrderType } from '../types';
-import { Truck, Phone, MapPin, User, XCircle, CheckCircle } from 'lucide-react';
+import { getOrders, updateOrderStatus, getCurrentUser } from '../services/api';
+import { Order, OrderStatus, OrderType, UserRole } from '../types';
+import { Truck, Phone, MapPin, User, XCircle, CheckCircle, PlusCircle } from 'lucide-react';
 
-const Orders: React.FC = () => {
+interface OrdersProps {
+  onNavigate: (page: string) => void;
+}
+
+const Orders: React.FC<OrdersProps> = ({ onNavigate }) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [filter, setFilter] = useState<OrderStatus | 'ALL'>('ALL');
+  const [currentUserRole, setCurrentUserRole] = useState<UserRole | null>(null);
 
   useEffect(() => {
+    const user = getCurrentUser();
+    if (user) setCurrentUserRole(user.role);
+
     loadOrders();
     const interval = setInterval(loadOrders, 10000); // Polling for new orders every 10s
     return () => clearInterval(interval);
@@ -48,6 +56,8 @@ const Orders: React.FC = () => {
     );
   };
 
+  const canCreateOrder = currentUserRole === UserRole.ADMIN || currentUserRole === UserRole.CAJERO;
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -56,22 +66,40 @@ const Orders: React.FC = () => {
            <p className="text-gray-500">Gestión de entregas</p>
         </div>
         
-        <div className="flex gap-2 overflow-x-auto pb-2">
-           <button onClick={() => setFilter('ALL')} className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${filter === 'ALL' ? 'bg-gray-800 text-white' : 'bg-white border'}`}>Todos</button>
-           <button onClick={() => setFilter(OrderStatus.PENDIENTE)} className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${filter === OrderStatus.PENDIENTE ? 'bg-yellow-500 text-white' : 'bg-white border'}`}>Pendientes</button>
-           <button onClick={() => setFilter(OrderStatus.EN_CAMINO)} className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${filter === OrderStatus.EN_CAMINO ? 'bg-purple-500 text-white' : 'bg-white border'}`}>En Camino</button>
+        <div className="flex items-center gap-4">
+           {/* New Order Button for Admin/Cashier */}
+           {canCreateOrder && (
+             <button 
+                onClick={() => onNavigate('pos')}
+                className="bg-brand-600 text-white px-4 py-2 rounded-lg flex items-center shadow-lg shadow-brand-200 hover:bg-brand-700 transition-all font-bold text-sm"
+             >
+                <PlusCircle className="w-5 h-5 mr-2" />
+                Nuevo Pedido
+             </button>
+           )}
+
+           <div className="flex gap-2 overflow-x-auto pb-1">
+              <button onClick={() => setFilter('ALL')} className={`px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors ${filter === 'ALL' ? 'bg-gray-800 text-white' : 'bg-white border hover:bg-gray-50'}`}>Todos</button>
+              <button onClick={() => setFilter(OrderStatus.PENDIENTE)} className={`px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors ${filter === OrderStatus.PENDIENTE ? 'bg-yellow-500 text-white' : 'bg-white border hover:bg-yellow-50'}`}>Pendientes</button>
+              <button onClick={() => setFilter(OrderStatus.EN_CAMINO)} className={`px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors ${filter === OrderStatus.EN_CAMINO ? 'bg-purple-500 text-white' : 'bg-white border hover:bg-purple-50'}`}>En Camino</button>
+           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredOrders.length === 0 ? (
-            <div className="col-span-full text-center py-20 text-gray-400">
+            <div className="col-span-full text-center py-20 text-gray-400 border-2 border-dashed border-gray-200 rounded-xl">
                 <Truck className="w-16 h-16 mx-auto mb-4 opacity-20" />
                 <p>No hay pedidos en esta categoría</p>
+                {canCreateOrder && (
+                    <button onClick={() => onNavigate('pos')} className="mt-4 text-brand-600 font-bold hover:underline">
+                        Crear primer pedido en POS
+                    </button>
+                )}
             </div>
         ) : filteredOrders.map(order => (
-          <div key={order.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-gray-100 flex justify-between items-start">
+          <div key={order.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col transition-all hover:shadow-md">
+            <div className="p-4 border-b border-gray-100 flex justify-between items-start bg-gray-50/50">
                <div>
                   <div className="flex items-center gap-2 mb-1">
                      <span className="font-bold text-gray-800">#{order.id.slice(0, 5)}</span>

@@ -48,7 +48,7 @@ const App: React.FC = () => {
       case 'dashboard': return <Dashboard />;
       case 'pos': return <POS />;
       case 'inventory': return <Inventory />;
-      case 'orders': return <Orders />;
+      case 'orders': return <Orders onNavigate={setCurrentPage} />;
       case 'customers': return <Customers />;
       case 'reports': return <Reports />;
       case 'sales-history': return <SalesHistory />;
