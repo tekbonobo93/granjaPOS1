@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { getProducts, getCustomers, createOrder, saveCustomer, generateUUID } from '../services/api';
 import { Product, CartItem, Customer, OrderType, OrderStatus, PaymentMethod, ProductCategory, Order, UnitType } from '../types';
@@ -105,7 +106,10 @@ const POS: React.FC = () => {
         // Standard Units (Kg, Unidad, Bandeja)
         // For Eggs, if they select "30" (Cubeta), quantity is 30.
         // If Category is Eggs, help display.
-        let displayUnit = selectedProductForAdd.unit;
+        
+        // CORRECCIÓN AQUI: Definimos displayUnit como string explícitamente para permitir textos personalizados
+        let displayUnit: string = selectedProductForAdd.unit;
+        
         if (selectedProductForAdd.category === ProductCategory.HUEVOS) {
             if (finalQuantity === 1) displayUnit = 'Unidad';
             else if (finalQuantity === 12) displayUnit = 'Docena';
