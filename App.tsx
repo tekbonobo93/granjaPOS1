@@ -17,15 +17,31 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState('pos');
 
+  // Centralized routing logic based on role
+  const routeUser = (u: User) => {
+    if (u.role === UserRole.REPARTIDOR) {
+      setCurrentPage('orders');
+    } else {
+      // Admin and Cajero default to POS for quick access
+      setCurrentPage('pos');
+    }
+  };
+
   useEffect(() => {
     const u = getCurrentUser();
     if (u) {
       setUser(u);
-      // Redirect based on role
-      if (u.role === UserRole.REPARTIDOR) setCurrentPage('orders');
-      else setCurrentPage('pos');
+      routeUser(u);
     }
   }, []);
+
+  const handleLogin = () => {
+    const u = getCurrentUser();
+    if (u) {
+      setUser(u);
+      routeUser(u);
+    }
+  };
 
   const renderPage = () => {
     switch (currentPage) {
@@ -42,7 +58,7 @@ const App: React.FC = () => {
   };
 
   if (!user) {
-    return <Login onLoginSuccess={() => setUser(getCurrentUser())} />;
+    return <Login onLoginSuccess={handleLogin} />;
   }
 
   return (

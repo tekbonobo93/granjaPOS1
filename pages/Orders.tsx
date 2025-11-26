@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { getOrders, updateOrderStatus } from '../services/api';
 import { Order, OrderStatus, OrderType } from '../types';
-import { Truck, Clock, CheckCircle, Package, User, MapPin, Phone } from 'lucide-react';
+import { Truck, Phone, MapPin, User, XCircle, CheckCircle } from 'lucide-react';
 
 const Orders: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -21,6 +22,9 @@ const Orders: React.FC = () => {
   };
 
   const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
+    if (newStatus === OrderStatus.CANCELADO) {
+        if (!window.confirm("¿Estás seguro de cancelar este pedido?")) return;
+    }
     await updateOrderStatus(orderId, newStatus);
     await loadOrders();
   };
@@ -49,13 +53,13 @@ const Orders: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
            <h2 className="text-2xl font-bold text-gray-800">Delivery & Pedidos</h2>
-           <p className="text-gray-500">Gestión de entregas de WhatsApp</p>
+           <p className="text-gray-500">Gestión de entregas</p>
         </div>
         
         <div className="flex gap-2 overflow-x-auto pb-2">
-           <button onClick={() => setFilter('ALL')} className={`px-3 py-1 rounded-lg text-sm ${filter === 'ALL' ? 'bg-gray-800 text-white' : 'bg-white border'}`}>Todos</button>
-           <button onClick={() => setFilter(OrderStatus.PENDIENTE)} className={`px-3 py-1 rounded-lg text-sm ${filter === OrderStatus.PENDIENTE ? 'bg-yellow-500 text-white' : 'bg-white border'}`}>Pendientes</button>
-           <button onClick={() => setFilter(OrderStatus.EN_CAMINO)} className={`px-3 py-1 rounded-lg text-sm ${filter === OrderStatus.EN_CAMINO ? 'bg-purple-500 text-white' : 'bg-white border'}`}>En Camino</button>
+           <button onClick={() => setFilter('ALL')} className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${filter === 'ALL' ? 'bg-gray-800 text-white' : 'bg-white border'}`}>Todos</button>
+           <button onClick={() => setFilter(OrderStatus.PENDIENTE)} className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${filter === OrderStatus.PENDIENTE ? 'bg-yellow-500 text-white' : 'bg-white border'}`}>Pendientes</button>
+           <button onClick={() => setFilter(OrderStatus.EN_CAMINO)} className={`px-3 py-1 rounded-lg text-sm whitespace-nowrap ${filter === OrderStatus.EN_CAMINO ? 'bg-purple-500 text-white' : 'bg-white border'}`}>En Camino</button>
         </div>
       </div>
 
@@ -91,7 +95,7 @@ const Orders: React.FC = () => {
                {order.phone && (
                    <div className="flex items-start gap-3">
                      <Phone className="w-4 h-4 text-gray-400 mt-1" />
-                     <p className="text-sm text-gray-600">{order.phone}</p>
+                     <a href={`tel:${order.phone}`} className="text-sm text-blue-600 hover:underline">{order.phone}</a>
                    </div>
                )}
                {order.address && (
@@ -113,34 +117,60 @@ const Orders: React.FC = () => {
                </div>
             </div>
 
-            <div className="p-3 bg-gray-50 border-t flex gap-2 overflow-x-auto">
-               {order.status === OrderStatus.PENDIENTE && (
-                 <button 
-                   onClick={() => handleStatusChange(order.id, OrderStatus.EN_PREPARACION)}
-                   className="flex-1 bg-blue-600 text-white text-xs font-bold py-2 px-3 rounded hover:bg-blue-700"
-                 >
-                   Preparar
-                 </button>
-               )}
-               
-               {(order.status === OrderStatus.PENDIENTE || order.status === OrderStatus.EN_PREPARACION) && (
-                 <button 
-                   onClick={() => handleStatusChange(order.id, OrderStatus.EN_CAMINO)}
-                   className="flex-1 bg-purple-600 text-white text-xs font-bold py-2 px-3 rounded hover:bg-purple-700"
-                 >
-                   Enviar
-                 </button>
-               )}
+            {/* Actions for Delivery Person */}
+            {order.status !== OrderStatus.ENTREGADO && order.status !== OrderStatus.CANCELADO && (
+                <div className="p-3 bg-gray-50 border-t flex flex-wrap gap-2">
+                   {order.status === OrderStatus.PENDIENTE && (
+                     <button 
+                       onClick={() => handleStatusChange(order.id, OrderStatus.EN_PREPARACION)}
+                       className="flex-1 bg-blue-600 text-white text-xs font-bold py-2 px-3 rounded hover:bg-blue-700"
+                     >
+                       Preparar
+                     </button>
+                   )}
+                   
+                   {(order.status === OrderStatus.PENDIENTE || order.status === OrderStatus.EN_PREPARACION) && (
+                     <button 
+                       onClick={() => handleStatusChange(order.id, OrderStatus.EN_CAMINO)}
+                       className="flex-1 bg-purple-600 text-white text-xs font-bold py-2 px-3 rounded hover:bg-purple-700"
+                     >
+                       Enviar
+                     </button>
+                   )}
 
-               {order.status === OrderStatus.EN_CAMINO && (
-                 <button 
-                   onClick={() => handleStatusChange(order.id, OrderStatus.ENTREGADO)}
-                   className="flex-1 bg-green-600 text-white text-xs font-bold py-2 px-3 rounded hover:bg-green-700"
-                 >
-                   Entregar
-                 </button>
-               )}
-            </div>
+                   {order.status === OrderStatus.EN_CAMINO && (
+                     <button 
+                       onClick={() => handleStatusChange(order.id, OrderStatus.ENTREGADO)}
+                       className="flex-1 bg-green-600 text-white text-xs font-bold py-2 px-3 rounded hover:bg-green-700 flex items-center justify-center gap-1"
+                     >
+                       <CheckCircle className="w-3 h-3" />
+                       Entregado
+                     </button>
+                   )}
+                   
+                   <button 
+                      onClick={() => handleStatusChange(order.id, OrderStatus.CANCELADO)}
+                      className="px-3 py-2 bg-white border border-red-200 text-red-600 rounded text-xs font-bold hover:bg-red-50 flex items-center gap-1"
+                      title="Cancelar Pedido"
+                   >
+                       <XCircle className="w-4 h-4" />
+                       {order.status === OrderStatus.EN_CAMINO ? 'No Entregado' : ''}
+                   </button>
+                </div>
+            )}
+            
+            {order.status === OrderStatus.ENTREGADO && (
+                 <div className="p-2 bg-green-50 border-t border-green-100 text-center text-green-700 text-xs font-bold flex items-center justify-center gap-2">
+                     <CheckCircle className="w-3 h-3" />
+                     Pedido completado
+                 </div>
+            )}
+            {order.status === OrderStatus.CANCELADO && (
+                 <div className="p-2 bg-red-50 border-t border-red-100 text-center text-red-700 text-xs font-bold flex items-center justify-center gap-2">
+                     <XCircle className="w-3 h-3" />
+                     Pedido cancelado
+                 </div>
+            )}
           </div>
         ))}
       </div>

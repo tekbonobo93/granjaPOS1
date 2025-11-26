@@ -29,21 +29,20 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout, currentPage, 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const getMenuItems = () => {
-    const items = [
+    // Define all possible menu items with their allowed roles
+    const allItems = [
+      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: [UserRole.ADMIN] },
       { id: 'pos', label: 'Punto de Venta', icon: ShoppingCart, roles: [UserRole.ADMIN, UserRole.CAJERO] },
       { id: 'orders', label: 'Delivery / Pedidos', icon: Truck, roles: [UserRole.ADMIN, UserRole.CAJERO, UserRole.REPARTIDOR] },
+      { id: 'customers', label: 'Clientes', icon: Users, roles: [UserRole.ADMIN, UserRole.CAJERO] },
+      { id: 'inventory', label: 'Inventario', icon: Package, roles: [UserRole.ADMIN] },
+      { id: 'sales-history', label: 'Historial Ventas', icon: History, roles: [UserRole.ADMIN] },
+      { id: 'purchases', label: 'Compras / Insumos', icon: ClipboardList, roles: [UserRole.ADMIN] },
+      { id: 'reports', label: 'Reportes Financieros', icon: PieChart, roles: [UserRole.ADMIN] },
     ];
 
-    if (user.role === UserRole.ADMIN) {
-      items.unshift({ id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: [UserRole.ADMIN] });
-      items.push({ id: 'sales-history', label: 'Historial Ventas', icon: History, roles: [UserRole.ADMIN] });
-      items.push({ id: 'purchases', label: 'Compras / Insumos', icon: ClipboardList, roles: [UserRole.ADMIN] });
-      items.push({ id: 'reports', label: 'Reportes Financieros', icon: PieChart, roles: [UserRole.ADMIN] });
-      items.push({ id: 'inventory', label: 'Inventario', icon: Package, roles: [UserRole.ADMIN] });
-      items.push({ id: 'customers', label: 'Clientes', icon: Users, roles: [UserRole.ADMIN, UserRole.CAJERO] });
-    }
-
-    return items;
+    // Filter items based on the current user's role
+    return allItems.filter(item => item.roles.includes(user.role));
   };
 
   const navItemClass = (id: string) => `
