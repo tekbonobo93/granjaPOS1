@@ -30,11 +30,23 @@ export const generateUUID = (): string => {
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // --- Auth Service ---
-export const login = async (role: UserRole): Promise<User> => {
-  await delay(500);
-  const user: User = { id: 'u1', name: 'Usuario ' + role, role };
-  localStorage.setItem(KEYS.USER, JSON.stringify(user));
-  return user;
+const MOCK_USERS: User[] = [
+  { id: 'u1', username: 'admin', name: 'Administrador', role: UserRole.ADMIN, password: '123' },
+  { id: 'u2', username: 'cajero', name: 'Cajero Principal', role: UserRole.CAJERO, password: '123' },
+  { id: 'u3', username: 'repartidor', name: 'Repartidor 1', role: UserRole.REPARTIDOR, password: '123' },
+];
+
+export const login = async (username: string, password: string): Promise<User> => {
+  await delay(800);
+  const user = MOCK_USERS.find(u => u.username === username && u.password === password);
+  
+  if (!user) {
+    throw new Error('Credenciales inválidas');
+  }
+
+  const { password: _, ...userWithoutPassword } = user;
+  localStorage.setItem(KEYS.USER, JSON.stringify(userWithoutPassword));
+  return userWithoutPassword as User;
 };
 
 export const getCurrentUser = (): User | null => {

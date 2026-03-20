@@ -107,6 +107,8 @@ export interface Order {
 
 export interface User {
   id: string;
+  username: string;
   name: string;
   role: UserRole;
+  password?: string; // Optional for mock
 }

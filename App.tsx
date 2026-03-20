@@ -43,7 +43,28 @@ const App: React.FC = () => {
     }
   };
 
+  // Page permissions mapping
+  const PAGE_PERMISSIONS: Record<string, UserRole[]> = {
+    'dashboard': [UserRole.ADMIN],
+    'pos': [UserRole.ADMIN, UserRole.CAJERO],
+    'inventory': [UserRole.ADMIN],
+    'orders': [UserRole.ADMIN, UserRole.CAJERO, UserRole.REPARTIDOR],
+    'customers': [UserRole.ADMIN, UserRole.CAJERO],
+    'reports': [UserRole.ADMIN],
+    'sales-history': [UserRole.ADMIN],
+    'purchases': [UserRole.ADMIN],
+  };
+
   const renderPage = () => {
+    // Check if user has permission for the current page
+    const allowedRoles = PAGE_PERMISSIONS[currentPage] || [];
+    if (user && !allowedRoles.includes(user.role)) {
+      // If not allowed, redirect to the first allowed page or POS
+      const firstAllowed = Object.keys(PAGE_PERMISSIONS).find(p => PAGE_PERMISSIONS[p].includes(user.role)) || 'pos';
+      setCurrentPage(firstAllowed);
+      return null;
+    }
+
     switch (currentPage) {
       case 'dashboard': return <Dashboard />;
       case 'pos': return <POS />;
